@@ -8,8 +8,20 @@ profile/README.md          витрина организации (английс
 profile/banner-dark.svg    баннер 1200×400 для тёмной темы
 profile/banner-light.svg   то же для светлой
 tools/make_banner.py       генератор обоих баннеров
+tools/make_avatar.py       генератор аватаров организации
 tools/logo.png             знак AIM, из которого собираются точки
+tools/avatar/              аватары 500×500 и лист с превью
 ```
+
+## Аватар
+
+Аватар организации меняется только вручную и только владельцем орги:
+https://github.com/organizations/ai-mindset-org/settings/profile → Upload new picture.
+API для смены аватара организации у GitHub нет.
+
+`tools/avatar/avatar-dark.png` — основной, белый знак на чёрном поле. Рядом бумажный
+и точечный варианты, `preview.png` показывает все три в 260, 96 и 40 пикселей.
+Пересобрать: `cd tools && python make_avatar.py`.
 
 ## Баннер
 
