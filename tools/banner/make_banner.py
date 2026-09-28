@@ -2,7 +2,7 @@
 
 Every cube is its own object: it starts in a cloud around the mark and flies into
 place with a turn, left half first. Motion is SMIL (animate + animateTransform, fill
-freeze, plays once) because GitHub strips <script> and CSS animation through camo is
+loop: fly in, hold 3 s, fly out) because GitHub strips <script> and CSS animation through camo is
 unreliable. Text is converted to outlines, so no fonts load on GitHub.
 
 Run: python make_banner.py  -> writes ../../profile/banner-{light,dark}.svg
@@ -48,6 +48,10 @@ def rnd(i, k):
     v = math.sin(i * 12.9898 + k * 78.233) * 43758.5453
     return v - math.floor(v)
 
+FLY, OUT, HOLD = 1.5, 1.1, 3.0
+ASSEMBLED = 2.4 + FLY           # last cube lands (max delay 2.4 s)
+PERIOD = round(ASSEMBLED + HOLD + 0.88 + OUT + 0.4, 1)
+
 def logo(t, x0, y0, u):
     cubes = []
     for i, ((c, r), s) in enumerate(CELLS):
@@ -58,14 +62,22 @@ def logo(t, x0, y0, u):
         delay = int(200 + (c / COLS) * 1500 + rnd(i, 4) * 700)
         b = max(0.8, w * 0.1)
         cx, cy = x + w / 2, y + w / 2
-        bs = f'{delay / 1000:.2f}s'
+        # one loop of PERIOD s: fly in, hold (whole mark stands HOLD s), fly out, empty gap
+        a0 = delay / 1000; a1 = a0 + FLY
+        s0 = ASSEMBLED + HOLD + (a0 - 0.2) * 0.4; s1 = s0 + OUT
+        kt = lambda *ts: ';'.join(f'{v / PERIOD:.4f}' for v in ts)
+        times = kt(0, a0, a1, s0, s1, PERIOD)
+        splines = '0 0 1 1;.22 1 .36 1;0 0 1 1;.64 0 .78 0;0 0 1 1'
+        loop = f'dur="{PERIOD}s" repeatCount="indefinite" calcMode="spline" keyTimes="{times}" keySplines="{splines}"'
+        out_t, out_r = f'{tx:.0f} {ty:.0f}', f'{rot:.0f} {cx:.1f} {cy:.1f}'
         cubes.append(
             f'<g opacity="0">'
-            f'<animate attributeName="opacity" from="0" to="1" begin="{bs}" dur="0.35s" fill="freeze"/>'
-            f'<animateTransform attributeName="transform" type="translate" values="{tx:.0f} {ty:.0f};0 0" '
-            f'begin="{bs}" dur="1.5s" calcMode="spline" keyTimes="0;1" keySplines=".22 1 .36 1" fill="freeze"/>'
-            f'<animateTransform attributeName="transform" type="rotate" additive="sum" values="{rot:.0f} {cx:.1f} {cy:.1f};0 {cx:.1f} {cy:.1f}" '
-            f'begin="{bs}" dur="1.5s" calcMode="spline" keyTimes="0;1" keySplines=".22 1 .36 1" fill="freeze"/>'
+            f'<animate attributeName="opacity" values="0;0;1;1;0;0" dur="{PERIOD}s" repeatCount="indefinite" '
+            f'keyTimes="{kt(0, a0, a0 + 0.35, s0 + OUT * 0.55, s1, PERIOD)}"/>'
+            f'<animateTransform attributeName="transform" type="translate" '
+            f'values="{out_t};{out_t};0 0;0 0;{out_t};{out_t}" {loop}/>'
+            f'<animateTransform attributeName="transform" type="rotate" additive="sum" '
+            f'values="{out_r};{out_r};0 {cx:.1f} {cy:.1f};0 {cx:.1f} {cy:.1f};{out_r};{out_r}" {loop}/>'
             f'<rect x="{x:.2f}" y="{y:.2f}" width="{w:.2f}" height="{w:.2f}" fill="url(#f)"/>'
             f'<path fill="{t["hi"]}" d="M{x:.2f} {y:.2f}h{w:.2f}l-{b:.2f} {b:.2f}h-{w-2*b:.2f}v{w-2*b:.2f}l-{b:.2f} {b:.2f}z"/>'
             f'<path fill="{t["lo"]}" d="M{x+w:.2f} {y+w:.2f}h-{w:.2f}l{b:.2f} -{b:.2f}h{w-2*b:.2f}v-{w-2*b:.2f}l{b:.2f} -{b:.2f}z"/>'
