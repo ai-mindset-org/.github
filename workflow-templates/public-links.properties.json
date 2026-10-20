@@ -1,0 +1,8 @@
+{
+  "name": "Public repository links",
+  "description": "Readable AIM links, UTM, labs block and About metadata; shared read-only policy.",
+  "iconName": "link",
+  "categories": [
+    "Continuous integration"
+  ]
+}
