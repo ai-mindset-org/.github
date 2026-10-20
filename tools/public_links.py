@@ -221,7 +221,8 @@ def with_block(text: str, slug: str) -> str:
     heading = re.search(r'^# [^\n]*\n', text, re.M)
     pos = picture.end() if picture else heading.end() if heading else 0
     prefix = text[:pos].rstrip()
-    return (prefix + '\n\n' if prefix else '') + managed + '\n\n' + text[pos:].lstrip()
+    suffix = text[pos:].lstrip()
+    return (prefix + '\n\n' if prefix else '') + managed + ('\n\n' + suffix if suffix else '\n')
 
 
 def files(root: Path):

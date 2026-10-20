@@ -131,6 +131,12 @@ https://aimindset.org/
         self.assertLess(fixed.index('</picture>'), fixed.index(P.START))
         self.assertIn('github-org-profile', fixed)
 
+    def test_new_minimal_readme_has_no_blank_eof_line(self):
+        fixed = P.with_block('# Demo\n', 'demo')
+        self.assertTrue(fixed.endswith('\n'))
+        self.assertFalse(fixed.endswith('\n\n'))
+        self.assertEqual(P.with_block(fixed, 'demo'), fixed)
+
     def test_labs_block_cannot_drift_to_bottom(self):
         text = '# Demo\n\nIntroduction.\n\n## Setup\n\n' + P.block('demo', True) + '\n'
         fixed = P.with_block(text, 'demo')
