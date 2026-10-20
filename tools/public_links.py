@@ -38,7 +38,10 @@ def content(slug: str) -> str:
 
 
 def eligible(url: str) -> bool:
-    p = urlsplit(html.unescape(url))
+    try:
+        p = urlsplit(html.unescape(url))
+    except ValueError:
+        return False
     host = (p.hostname or '').lower()
     owned = host == 'aimindset.org' or host.endswith('.aimindset.org') or host == 'ai-mindset-org.github.io'
     return (owned and host not in SERVICE and p.scheme in ('', 'http', 'https')
@@ -48,9 +51,12 @@ def eligible(url: str) -> bool:
 
 def normalized(url: str, slug: str) -> tuple[str, str | None]:
     raw = html.unescape(url)
+    try:
+        p = urlsplit(raw)
+    except ValueError:
+        return raw, 'invalid-url'
     if not eligible(raw):
         return raw, None
-    p = urlsplit(raw)
     if p.username or p.password:
         return raw, 'protected-url-needs-review'
     pairs = parse_qsl(p.query, keep_blank_values=True)
@@ -179,9 +185,9 @@ def readable(url: str) -> str:
 def inspect(text: str, slug: str, markdown: bool, fix=False):
     findings, edits = [], []
     for link in links(text, markdown):
-        if not eligible(link.url):
-            continue
         target, error = normalized(link.url, slug)
+        if not error and not eligible(link.url):
+            continue
         reasons = [error] if error else []
         if not error and target != html.unescape(link.url):
             reasons.append('utm-missing-or-invalid')

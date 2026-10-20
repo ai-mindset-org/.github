@@ -13,6 +13,12 @@ SPEC.loader.exec_module(P)
 
 
 class URLContract(unittest.TestCase):
+    def test_malformed_authority_is_reported_without_rewriting(self):
+        for url in ('https://[foo', 'https://[not-ip]/', 'https://aimindset.org\uff0fevil/'):
+            with self.subTest(url=url):
+                self.assertFalse(P.eligible(url))
+                self.assertEqual(P.normalized(url, 'demo'), (url, 'invalid-url'))
+
     def test_query_fragment_and_duplicates_survive(self):
         value, error = P.normalized('https://aimindset.org/pay?product=f26_base&x=1&x=2#details', 'demo')
         self.assertIsNone(error)
@@ -58,6 +64,13 @@ class URLContract(unittest.TestCase):
 
 
 class DocumentContract(unittest.TestCase):
+    def test_malformed_html_url_is_a_finding_and_fix_preserves_source(self):
+        original = '<a href="https://[foo">Tool</a>'
+        for fix in (False, True):
+            result, findings = P.inspect(original, 'demo', False, fix)
+            self.assertEqual(result, original)
+            self.assertEqual(findings[0]['reasons'], ['invalid-url'])
+
     def test_markdown_visible_label_unchanged(self):
         original = '[Открыть инструмент](https://apps.aimindset.org/tool/?mode=demo#start)'
         fixed, _ = P.inspect(original, 'demo', True, True)
