@@ -1,6 +1,6 @@
 # Contributing to public AI Mindset repositories
 
-Use [the public repository standard](PUBLIC_REPOSITORIES.md) before creating or
+Use [the public repository standard](https://github.com/ai-mindset-org/.github/blob/main/PUBLIC_REPOSITORIES.md) before creating or
 publishing an organization repository. Keep the standard labs/knowledge block
 near the beginning of its README, use readable labels for tracked outbound links,
 and install the shared Public repository links workflow.
