@@ -13,6 +13,26 @@ SPEC.loader.exec_module(P)
 
 
 class URLContract(unittest.TestCase):
+    def test_registered_duplicate_ids_need_review(self):
+        url = 'https://aimindset.org/?utm_source=partner&utm_medium=post&utm_campaign=f26&utm_content=author&utm_id=123&utm_id=456'
+        self.assertEqual(P.normalized(url, 'demo'), (url, 'registered-link-needs-review'))
+
+    def test_tracking_key_case_is_canonicalized_without_duplicate_attribution(self):
+        url = 'https://aimindset.org/?UTM_SOURCE=old&utm_source=other&UTM_TERM=remove&UTM_CAMPAIGN=f26&Mode=demo'
+        result, error = P.normalized(url, 'demo')
+        self.assertIsNone(error)
+        q = parse_qs(urlsplit(result).query)
+        self.assertEqual(q['utm_source'], ['website'])
+        self.assertEqual(q['utm_campaign'], ['f26'])
+        self.assertEqual(q['Mode'], ['demo'])
+        self.assertNotIn('UTM_SOURCE', q)
+        self.assertNotIn('UTM_TERM', q)
+        self.assertEqual(P.normalized(result, 'demo'), (result, None))
+
+    def test_registered_mixed_case_is_preserved_for_review(self):
+        url = 'https://aimindset.org/?utm_source=partner&utm_medium=post&utm_campaign=f26&utm_content=author&UTM_ID=123'
+        self.assertEqual(P.normalized(url, 'demo'), (url, 'registered-link-needs-review'))
+
     def test_malformed_authority_is_reported_without_rewriting(self):
         for url in ('https://[foo', 'https://[not-ip]/', 'https://aimindset.org\uff0fevil/'):
             with self.subTest(url=url):

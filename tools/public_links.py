@@ -59,7 +59,9 @@ def normalized(url: str, slug: str) -> tuple[str, str | None]:
         return raw, None
     if p.username or p.password:
         return raw, 'protected-url-needs-review'
-    pairs = parse_qsl(p.query, keep_blank_values=True)
+    original_pairs = parse_qsl(p.query, keep_blank_values=True)
+    tracking_keys = {*KEYS, 'utm_id', 'utm_term', 'promo'}
+    pairs = [(k.lower() if k.lower() in tracking_keys else k, v) for k, v in original_pairs]
     params: dict[str, list[str]] = {}
     for k, v in pairs:
         params.setdefault(k, []).append(v)
@@ -68,8 +70,10 @@ def normalized(url: str, slug: str) -> tuple[str, str | None]:
     # Registered links retain the identity and attribution minted by the UTM service.
     if 'utm_id' in params or 'promo' in params:
         complete = all(len(params.get(k, [])) == 1 and params[k][0] for k in KEYS)
-        valid_id = bool(re.fullmatch(r'[1-9][0-9]*', params.get('utm_id', [''])[0]))
-        if not complete or not valid_id or 'utm_term' in params:
+        ids = params.get('utm_id', [])
+        valid_id = len(ids) == 1 and bool(re.fullmatch(r'[1-9][0-9]*', ids[0]))
+        canonical_keys = all(k == k.lower() for k, _ in original_pairs if k.lower() in tracking_keys)
+        if not complete or not valid_id or not canonical_keys or 'utm_term' in params:
             return raw, 'registered-link-needs-review'
         return raw, None
     campaign = params.get('utm_campaign', ['bio' if p.hostname == 'bio.aimindset.org' else 'start'])[0]
