@@ -41,6 +41,6 @@ GitHub – see what we build.
 [Instagram](https://www.instagram.com/ai_mind_set_/) – a visual diary of the project
 [LinkedIn](https://www.linkedin.com/company/aimindset) · [meeting calendar](https://luma.com/ai_mind_set)
 
-**[aimindset.org](https://aimindset.org)** · [info@aimindset.org](mailto:info@aimindset.org)
+**[aimindset.org](https://aimindset.org?utm_source=website&utm_medium=article&utm_campaign=start&utm_content=github-org-profile)** · [info@aimindset.org](mailto:info@aimindset.org)
 
 <sub>Attention over prompts · systems over tricks · meaning over volume · one narrative over five lives · non-trivial connections over expertise</sub>
