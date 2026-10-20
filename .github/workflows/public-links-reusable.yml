@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           repository: ai-mindset-org/.github
-          ref: 190adb25e482d4687ebfec05cfa30c20f550bc52
+          ref: b1183a5e82a926ab1c63a3b0e268f9982fb89d03
           path: policy
           persist-credentials: false
       - name: Check tracked documentation and standard labs block
