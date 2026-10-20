@@ -9,7 +9,7 @@ import urllib.error
 import urllib.request
 from urllib.parse import parse_qs, urlsplit
 
-from public_links import content, eligible, normalized
+from public_links import eligible, normalized, safe_path
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -77,9 +77,12 @@ def main():
     try:
         if not re.fullmatch(r'[a-zA-Z0-9._-]{1,100}', args.slug):
             raise ValueError('invalid repository slug')
-        f = args.repo / '.github/public-links.json'
-        if f.is_symlink():
-            raise ValueError('metadata manifest cannot be a symlink')
+        root = args.repo.resolve()
+        f = root / '.github/public-links.json'
+        if not safe_path(root, f):
+            raise ValueError('metadata manifest cannot traverse a symlink or leave the repository')
+        if f.stat().st_size > 64_000:
+            raise ValueError('metadata manifest exceeds 64KB limit')
         manifest = json.loads(f.read_text())
         metadata = github('repos/ai-mindset-org/' + args.slug)
         org = github('orgs/ai-mindset-org') if args.slug == '.github' else None

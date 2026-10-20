@@ -185,6 +185,27 @@ class LiveGateContract(unittest.TestCase):
         finally:
             outside.unlink()
 
+    def test_profile_parent_symlink_cannot_read_or_rewrite_external_readme(self):
+        with tempfile.TemporaryDirectory() as outside:
+            f = Path(outside) / 'README.md'
+            f.write_text('private material')
+            (self.root / 'README.md').write_text('# Organization\n')
+            (self.root / 'profile').symlink_to(outside, target_is_directory=True)
+            self.stage()
+            result = P.run(self.root, '.github', True)
+            self.assertFalse(result['pass'])
+            self.assertEqual(f.read_text(), 'private material')
+            self.assertTrue(any(row['file']=='profile/README.md' and 'symlink-or-out-of-root-document' in row['reasons'] for row in result['findings']))
+
+    def test_oversize_readme_is_not_rewritten_by_fix(self):
+        f = self.root / 'README.md'
+        f.write_bytes(b'x' * 4_000_001)
+        self.stage()
+        result = P.run(self.root, 'demo', True)
+        self.assertFalse(result['pass'])
+        self.assertEqual(f.stat().st_size, 4_000_001)
+        self.assertIn('document-exceeds-4mb', result['findings'][0]['reasons'])
+
 
 if __name__ == '__main__':
     unittest.main()

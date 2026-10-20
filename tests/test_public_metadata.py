@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 import unittest
+import tempfile
+import subprocess
 sys.path.insert(0, str(Path(__file__).parents[1] / 'tools'))
 import public_metadata as M
 from public_links import normalized
@@ -33,6 +35,24 @@ class MetadataContract(unittest.TestCase):
         manifest, data, resolver = self.fixture()
         manifest['homepage_target'] = 'https://unrelated.example/'
         self.assertTrue(M.audit('demo', manifest, data, resolver))
+
+    def test_manifest_parent_symlink_fails_before_any_network_request(self):
+        with tempfile.TemporaryDirectory() as checkout, tempfile.TemporaryDirectory() as outside:
+            (Path(outside) / 'public-links.json').write_text('{"private": "material"}')
+            (Path(checkout) / '.github').symlink_to(outside, target_is_directory=True)
+            run = subprocess.run([sys.executable, str(Path(M.__file__)), '--repo', checkout, '--slug', 'demo'], capture_output=True, text=True)
+            self.assertEqual(run.returncode, 1)
+            self.assertIn('cannot traverse a symlink', run.stdout)
+            self.assertNotIn('material', run.stdout)
+
+    def test_oversize_manifest_fails_before_network_request(self):
+        with tempfile.TemporaryDirectory() as checkout:
+            p = Path(checkout) / '.github'
+            p.mkdir()
+            (p / 'public-links.json').write_text('{"padding":"' + 'x' * 64_000 + '"}')
+            run = subprocess.run([sys.executable, str(Path(M.__file__)), '--repo', checkout, '--slug', 'demo'], capture_output=True, text=True)
+            self.assertEqual(run.returncode, 1)
+            self.assertIn('exceeds 64KB limit', run.stdout)
 
 
 if __name__ == '__main__':

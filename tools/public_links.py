@@ -225,6 +225,15 @@ def with_block(text: str, slug: str) -> str:
     return (prefix + '\n\n' if prefix else '') + managed + ('\n\n' + suffix if suffix else '\n')
 
 
+def safe_path(root: Path, path: Path) -> bool:
+    cursor = root
+    for part in path.relative_to(root).parts:
+        cursor = cursor / part
+        if cursor.is_symlink():
+            return False
+    return path.resolve().is_relative_to(root.resolve())
+
+
 def files(root: Path):
     output = subprocess.check_output(['git', '-C', str(root), 'ls-files', '-z'], text=True)
     for name in output.split('\0'):
@@ -234,7 +243,7 @@ def files(root: Path):
         if any(x in ('node_modules', 'vendor', '.worktrees', '.git') for x in p.parts):
             continue
         full = root / p
-        if full.is_symlink() or not full.resolve().is_relative_to(root.resolve()):
+        if not safe_path(root, full):
             yield name, full, 'symlink-or-out-of-root-document'
         elif full.stat().st_size > 4_000_000:
             yield name, full, 'document-exceeds-4mb'
@@ -246,12 +255,12 @@ def run(root: Path, slug: str, fix=False):
     if not re.fullmatch(r'[a-zA-Z0-9._-]{1,100}', slug):
         raise ValueError('invalid repository slug')
     primary = root / 'README.md'
-    if fix and not primary.exists() and not primary.is_symlink():
+    if fix and safe_path(root, primary) and not primary.exists():
         primary.write_text('# ' + slug + '\n')
     surfaces = [primary] + ([root / 'profile/README.md'] if slug == '.github' else [])
     if fix:
         for f in surfaces:
-            if f.exists() and not f.is_symlink():
+            if safe_path(root, f) and f.exists() and f.stat().st_size <= 4_000_000:
                 f.write_text(with_block(f.read_text(), slug))
     findings, scanned = [], []
     paths = {}
@@ -261,7 +270,13 @@ def run(root: Path, slug: str, fix=False):
         else:
             paths[name] = f
     for f in surfaces:
-        if f.exists() and not f.is_symlink():
+        if not safe_path(root, f):
+            if not any(row['file'] == str(f.relative_to(root)) for row in findings):
+                findings.append({'file':str(f.relative_to(root)), 'line':1, 'reasons':['symlink-or-out-of-root-document']})
+        elif f.exists() and f.stat().st_size > 4_000_000:
+            if not any(row['file'] == str(f.relative_to(root)) for row in findings):
+                findings.append({'file':str(f.relative_to(root)), 'line':1, 'reasons':['document-exceeds-4mb']})
+        elif f.exists():
             paths[str(f.relative_to(root))] = f
     for name, f in sorted(paths.items()):
         try:
@@ -276,7 +291,7 @@ def run(root: Path, slug: str, fix=False):
         scanned.append(name)
         findings.extend(dict(file=name, **r) for r in rows)
     for f in surfaces:
-        if f.is_symlink():
+        if not safe_path(root, f) or (f.exists() and f.stat().st_size > 4_000_000):
             continue  # Already a blocking finding; never follow it, even with --fix.
         if not f.exists() or f.read_text().count(START) != 1 or f.read_text().count(END) != 1:
             findings.append({'file':str(f.relative_to(root)), 'line':1, 'reasons':['missing-or-duplicate-labs-block']})
