@@ -160,14 +160,32 @@ def links(text: str, markdown: bool) -> list[Link]:
     for m in URL.finditer(masked):
         if any(a <= m.start() < b for a, b in ignore):
             continue
-        url = m[0].rstrip('.,;')
+        start = m.start()
+        before = masked[max(0, start - 500):start]
+        inline = bool(re.search(r'\]\(\s*<?$', before))
+        reference = bool(re.search(r'^ {0,3}\[[^\]]+\]:\s*<?$', before.split('\n')[-1]))
+        url = m[0]
+        if inline:
+            depth = 0
+            for i, char in enumerate(url):
+                if char == '(':
+                    depth += 1
+                elif char == ')':
+                    if depth == 0:
+                        url = url[:i]
+                        break
+                    depth -= 1
+        elif not reference:
+            emphasis = re.search(r'(?<!\\)(\*{1,3}|_{1,3}|~~)$', before)
+            if emphasis and url.endswith(emphasis[1]):
+                url = url[:-len(emphasis[1])]
+        url = url.rstrip('.,;')
         while url.endswith(')') and url.count(')') > url.count('('):
             url = url[:-1]
         if not url:
             continue
-        start, end = m.start(), m.start() + len(url)
-        before = masked[max(0, start - 500):start]
-        if re.search(r'\]\(\s*<?$', before) or re.search(r'^ {0,3}\[[^\]]+\]:\s*<?$', before.split('\n')[-1]):
+        end = start + len(url)
+        if inline or reference:
             kind = 'markdown'
         elif start and masked[start - 1] == '<' and end < len(masked) and masked[end] == '>':
             start -= 1

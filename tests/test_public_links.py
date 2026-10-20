@@ -84,6 +84,36 @@ class URLContract(unittest.TestCase):
 
 
 class DocumentContract(unittest.TestCase):
+    def test_bare_emphasis_stays_outside_the_link(self):
+        url = 'https://ai-mindset-org.github.io/pos-stack-explorer/naming.html'
+        target, _ = P.normalized(url, 'demo')
+        for marker in ('**', '*', '__', '_', '~~'):
+            with self.subTest(marker=marker):
+                fixed, _ = P.inspect(marker + url + marker, 'demo', True, True)
+                self.assertEqual(fixed, marker + '[' + P.readable(url) + '](' + target + ')' + marker)
+                self.assertEqual(urlsplit(P.links(fixed, True)[0].url).path, '/pos-stack-explorer/naming.html')
+                self.assertEqual(P.inspect(fixed, 'demo', True, True), (fixed, []))
+
+    def test_inline_closing_paren_and_emphasis_stay_outside_utm(self):
+        url = 'https://s26.aimindset.org/'
+        target, _ = P.normalized(url, 'demo')
+        for template in ('**[сайт]({}).**', '**сайт → [сайт]({})**',
+                         '~~[сайт]({})~~', '[сайт]({})**?outside=1'):
+            with self.subTest(template=template):
+                original = template.format(url)
+                fixed, _ = P.inspect(original, 'demo', True, True)
+                self.assertEqual(fixed, template.format(target))
+                self.assertEqual(P.inspect(fixed, 'demo', True, True), (fixed, []))
+
+    def test_inline_parentheses_and_literal_asterisks_are_preserved(self):
+        for url in ('https://aimindset.org/demo_(one)', 'https://aimindset.org/path**'):
+            with self.subTest(url=url):
+                target, _ = P.normalized(url, 'demo')
+                original = '**[lab](' + url + ')**'
+                fixed, _ = P.inspect(original, 'demo', True, True)
+                self.assertEqual(fixed, '**[lab](' + target + ')**')
+                self.assertEqual(P.inspect(fixed, 'demo', True, True), (fixed, []))
+
     def test_malformed_html_url_is_a_finding_and_fix_preserves_source(self):
         original = '<a href="https://[foo">Tool</a>'
         for fix in (False, True):
