@@ -4,6 +4,10 @@
   <img alt="AI Mindset — labs, platform, community, special projects" src="https://raw.githubusercontent.com/ai-mindset-org/.github/main/profile/banner-dark.svg">
 </picture>
 
+<!-- aim-public-links:start -->
+[AI Mindset labs](https://aimindset.org/?utm_source=website&utm_medium=article&utm_campaign=start&utm_content=github-org-profile#learning) · [Knowledge base](https://base.aimindset.org/?utm_source=website&utm_medium=article&utm_campaign=start&utm_content=github-org-profile)
+<!-- aim-public-links:end -->
+
 We run educational labs and build a platform, products, a community and special projects. This is an environment for those who explore what AI makes possible and want to keep their authorship, their attention and their own rhythm.
 
 `>25 labs` · `4 years of building labs` · `10+ directions and special projects` · `1600+ participants` · `30+ countries` · `>40 speakers across all cohorts`
@@ -33,10 +37,10 @@ GitHub – see what we build.
 [telegram channel](https://t.me/ai_mind_set) – observations, announcements and the project's work in the present
 [letters](https://aimindsetspace.substack.com/) – long reads · collected context and new projects
 [podcast on YouTube](https://www.youtube.com/@A-I-Mindset) – conversations with guest speakers, cases, live meetings
-[open knowledge base](https://learn.aimindset.org/) – materials, transcripts and recordings of meetings
+[open knowledge base](https://learn.aimindset.org/?utm_source=website&utm_medium=article&utm_campaign=start&utm_content=github-org-profile) – materials, transcripts and recordings of meetings
 [Instagram](https://www.instagram.com/ai_mind_set_/) – a visual diary of the project
 [LinkedIn](https://www.linkedin.com/company/aimindset) · [meeting calendar](https://luma.com/ai_mind_set)
 
-**[aimindset.org](https://aimindset.org)** · [info@aimindset.org](mailto:info@aimindset.org)
+**[aimindset.org](https://aimindset.org?utm_source=website&utm_medium=article&utm_campaign=start&utm_content=github-org-profile)** · [info@aimindset.org](mailto:info@aimindset.org)
 
 <sub>Attention over prompts · systems over tricks · meaning over volume · one narrative over five lives · non-trivial connections over expertise</sub>

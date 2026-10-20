@@ -1,5 +1,9 @@
 # .github
 
+<!-- aim-public-links:start -->
+[Лабы AI Mindset](https://aimindset.org/?utm_source=website&utm_medium=article&utm_campaign=start&utm_content=github-org-profile#learning) · [База знаний](https://base.aimindset.org/?utm_source=website&utm_medium=article&utm_campaign=start&utm_content=github-org-profile)
+<!-- aim-public-links:end -->
+
 Профиль организации `ai-mindset-org`. GitHub показывает `profile/README.md` на странице
 https://github.com/ai-mindset-org — этот файл, который вы читаете, виден только здесь, в репозитории.
 
@@ -52,3 +56,11 @@ blender -b voxel_object.blend --python tools/banner/extract_cubes.py
 
 Правится в `tools/banner/make_banner.py`: `THEME` — палитры светлой и тёмной темы,
 `FLY/OUT/HOLD` — длительность прилёта, разлёта и паузы, `logo()` — разлёт и задержки кубиков, `u` в `banner()` — размер кубика, блок `text(...)` — строки.
+
+## Публичные репозитории и ссылки
+
+[Общий стандарт](PUBLIC_REPOSITORIES.md) задаёт блок лаб, UTM внутри читаемых ссылок
+и оформление About. Общая проверка и её тесты находятся в `tools/public_links.py`,
+`tools/public_metadata.py`, `tests/`; workflow-шаблон предназначен для новых репозиториев.
+Проверка документации работает офлайн, проверка About читает публичные метаданные
+и цели существующей сокращалки. Рабочий код проверяемых репозиториев не исполняется.
